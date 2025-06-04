@@ -28,7 +28,7 @@ services:
       - jenkins_net
 
 volumes:
-  jenkins_home
-  
+  jenkins_home:
+
 networks:
   jenkins_net:
