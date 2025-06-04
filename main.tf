@@ -112,7 +112,7 @@ resource "aws_instance" "jenkins_server" {
                                 # Clonar repositório com Dockerfile e docker-compose.yml
                                 sudo yum install -y git
                                 git clone https://github.com/jangawi2024/jenkins.git /mnt/data/jenkins
-                                cd /mnt/dados/jenkins
+                                cd /mnt/data/jenkins
 
                                 # Usar o disco para Jenkins
                                 sudo docker-compose up -d
