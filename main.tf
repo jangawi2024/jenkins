@@ -122,7 +122,7 @@ resource "aws_instance" "jenkins_server" {
 
 resource "aws_volume_attachment" "jenkins_volume_attachment" {
     device_name = "/dev/xvdf" # Substitua pelo dispositivo correto
-    volume_id   = "vol-01eb61091a766da12" # ID do disco existente
+    volume_id   = "vol-058aa6fa82c54ac95" # ID do disco existente
     instance_id = aws_instance.jenkins_server.id
 }
 
