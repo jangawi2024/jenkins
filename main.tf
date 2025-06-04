@@ -85,22 +85,37 @@ resource "aws_instance" "jenkins_server" {
     }
 
     user_data = <<-EOF
-                            #!/bin/bash
-                            sudo yum update -y
-                            sudo yum install -y docker
-                            sudo systemctl enable docker
-                            sudo systemctl start docker
+                #!/bin/bash
+                sudo yum update -y
+                sudo yum install -y docker
+                sudo systemctl enable docker
+                sudo systemctl start docker
 
-                            # Instalar Docker Compose
-                            sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-                            sudo chmod +x /usr/local/bin/docker-compose
+                # Instalar Docker Compose
+                sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+                sudo chmod +x /usr/local/bin/docker-compose
 
-                            # Clonar repositório com Dockerfile e docker-compose.yml
-                            sudo yum install -y git
-                            git clone https://github.com/jangawi2024/jenkins.git /home/ec2-user/jenkins
-                            cd /home/ec2-user/jenkins
-                            sudo docker-compose up -d
-                            EOF
+                # Clonar repositório com Dockerfile e docker-compose.yml
+                sudo yum install -y git
+                git clone https://github.com/jangawi2024/jenkins.git /home/ec2-user/jenkins
+                cd /home/ec2-user/jenkins
+
+                # Montar o disco persistente
+                sudo mkdir -p /mnt/data
+                sudo file_system=$(lsblk -o FSTYPE -n /dev/xvdf)
+                if [ -z "$file_system" ]; then
+                    sudo mkfs.ext4 /dev/xvdf
+                fi
+                sudo mount /dev/xvdf /mnt/data
+                sudo chmod 777 /mnt/data
+
+                # Adicionar ao fstab para montagem automática
+                echo "/dev/xvdf /mnt/data ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
+
+                # Usar o disco para Jenkins
+                cd /home/ec2-user/jenkins
+                sudo docker-compose up -d
+                EOF
 }
 
 # Adicionar o disco existente à instância
@@ -124,7 +139,7 @@ resource "aws_lb" "jenkins_alb" {
 
 resource "aws_lb_target_group" "jenkins_tg" {
     name        = "jenkins-tg"
-    port        = 8080
+    port        = 80
     protocol    = "HTTP"
     vpc_id      = "vpc-0b7663962ba7082cb"
     target_type = "instance"
