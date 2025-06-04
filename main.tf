@@ -139,7 +139,7 @@ resource "aws_lb" "jenkins_alb" {
 
 resource "aws_lb_target_group" "jenkins_tg" {
     name        = "jenkins-tg"
-    port        = 80
+    port        = 8080
     protocol    = "HTTP"
     vpc_id      = "vpc-0b7663962ba7082cb"
     target_type = "instance"
@@ -171,5 +171,5 @@ resource "aws_lb_listener" "jenkins_listener" {
 resource "aws_lb_target_group_attachment" "jenkins_attachment" {
     target_group_arn = aws_lb_target_group.jenkins_tg.arn
     target_id        = aws_instance.jenkins_server.id
-    port             = 8080
+    port             = 80
 }
