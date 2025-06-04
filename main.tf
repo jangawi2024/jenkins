@@ -31,16 +31,16 @@ resource "aws_subnet" "new_subnet" {
     }
 }
 
-resource "aws_subnet" "new_subnet_2" {
-    vpc_id                  = "vpc-0b7663962ba7082cb"
-    cidr_block              = "172.32.0.0/16" # Alterado para evitar conflito
-    availability_zone       = "us-east-1b"
-    map_public_ip_on_launch = true
+# resource "aws_subnet" "new_subnet_2" {
+#     vpc_id                  = "vpc-0b7663962ba7082cb"
+#     cidr_block              = "172.32.0.0/16" # Alterado para evitar conflito
+#     availability_zone       = "us-east-1b"
+#     map_public_ip_on_launch = true
 
-    tags = {
-        Name = "NewSubnet2"
-    }
-}
+#     tags = {
+#         Name = "NewSubnet2"
+#     }
+# }
 
 resource "aws_security_group" "jenkins_sg" {
     name        = "jenkins_sg"
@@ -103,10 +103,12 @@ resource "aws_instance" "jenkins_server" {
         sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
         sudo chmod +x /usr/local/bin/docker-compose
 
-        # Criar diretório para Jenkins
-        sudo mkdir -p /var/jenkins
-        sudo chmod 777 /var/jenkins
-        sudo chown 1000:1000 /var/jenkins_home # Define o dono como o usuário Jenkins (UID 1000)
+        echo "Criando diretório para Jenkins e Nexus..."
+        sudo mkdir -p /var/jenkins_home
+        sudo mkdir -p /var/nexus-data
+        sudo chmod 755 /var/jenkins /var/nexus-data
+        sudo chown 1000:1000 /var/jenkins
+        sudo chown 1000:1000 /var/nexus-data
 
         # Clonar repositório Jenkins
         sudo yum install -y git
@@ -119,52 +121,52 @@ resource "aws_instance" "jenkins_server" {
 }
 
 
-resource "aws_lb" "jenkins_alb" {
-    name               = "jenkins-alb"
-    internal           = false
-    load_balancer_type = "application"
-    security_groups    = [aws_security_group.jenkins_sg.id]
-    subnets            = [aws_subnet.new_subnet.id, aws_subnet.new_subnet_2.id] # Incluindo ambas as subnets
+# resource "aws_lb" "jenkins_alb" {
+#     name               = "jenkins-alb"
+#     internal           = false
+#     load_balancer_type = "application"
+#     security_groups    = [aws_security_group.jenkins_sg.id]
+#     subnets            = [aws_subnet.new_subnet.id, aws_subnet.new_subnet_2.id] # Incluindo ambas as subnets
 
-    tags = {
-        Name = "JenkinsALB"
-    }
-}
+#     tags = {
+#         Name = "JenkinsALB"
+#     }
+# }
  
 
-resource "aws_lb_target_group" "jenkins_tg" {
-    name        = "jenkins-tg"
-    port        = 8080
-    protocol    = "HTTP"
-    vpc_id      = "vpc-0b7663962ba7082cb"
-    target_type = "instance"
+# resource "aws_lb_target_group" "jenkins_tg" {
+#     name        = "jenkins-tg"
+#     port        = 8080
+#     protocol    = "HTTP"
+#     vpc_id      = "vpc-0b7663962ba7082cb"
+#     target_type = "instance"
 
-    health_check {
-        path                = "/health"
-        interval            = 30
-        timeout             = 5
-        healthy_threshold   = 2
-        unhealthy_threshold = 2
-    }
+#     health_check {
+#         path                = "/health"
+#         interval            = 30
+#         timeout             = 5
+#         healthy_threshold   = 2
+#         unhealthy_threshold = 2
+#     }
 
-    tags = {
-        Name = "JenkinsTargetGroup"
-    }
-}
+#     tags = {
+#         Name = "JenkinsTargetGroup"
+#     }
+# }
 
-resource "aws_lb_listener" "jenkins_listener" {
-    load_balancer_arn = aws_lb.jenkins_alb.arn
-    port              = 8080
-    protocol          = "HTTP"
+# resource "aws_lb_listener" "jenkins_listener" {
+#     load_balancer_arn = aws_lb.jenkins_alb.arn
+#     port              = 8080
+#     protocol          = "HTTP"
 
-    default_action {
-        type             = "forward"
-        target_group_arn = aws_lb_target_group.jenkins_tg.arn
-    }
-}
+#     default_action {
+#         type             = "forward"
+#         target_group_arn = aws_lb_target_group.jenkins_tg.arn
+#     }
+# }
 
-resource "aws_lb_target_group_attachment" "jenkins_attachment" {
-    target_group_arn = aws_lb_target_group.jenkins_tg.arn
-    target_id        = aws_instance.jenkins_server.id
-    port             = 80
-}
+# resource "aws_lb_target_group_attachment" "jenkins_attachment" {
+#     target_group_arn = aws_lb_target_group.jenkins_tg.arn
+#     target_id        = aws_instance.jenkins_server.id
+#     port             = 80
+# }

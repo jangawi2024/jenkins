@@ -7,12 +7,25 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - /var/jenkins:/var/jenkins #Mapeia o disco persistente para o diretório do Jenkins
+      - /var/jenkins_home:/var/jenkins_home # Usa o disco persistente para Jenkins
     environment:
       - JAVA_OPTS=-Xmx1024m
       - JENKINS_OPTS=--prefix=/jenkins
     command: >
       java -jar /usr/share/jenkins/jenkins.war
+    networks:
+      - jenkins_net
+
+  nexus:
+    image: sonatype/nexus3:latest
+    container_name: nexus
+    restart: always
+    ports:
+      - "8081:8081" # Porta padrão do Nexus
+    volumes:
+      - /var/nexus-data:/nexus-data # Diretório persistente para Nexus
+    environment:
+      - NEXUS_CONTEXT=/nexus
     networks:
       - jenkins_net
 
@@ -29,6 +42,7 @@ services:
 
 volumes:
   jenkins_home:
+  nexus_data:
 
 networks:
   jenkins_net:
