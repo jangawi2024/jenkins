@@ -47,7 +47,7 @@ resource "aws_instance" "jenkins_server" {
                             sudo chmod +x /usr/local/bin/docker-compose
 
                             # Clonar repositório com Dockerfile e docker-compose.yml
-                            git clone https://github.com/seu-repo/jenkins-docker /home/ubuntu/jenkins
+                            git clone git@github.com:jangawi2024/jenkins.git /home/ubuntu/jenkins
                             cd /home/ubuntu/jenkins
                             sudo docker-compose up -d
                             EOF
