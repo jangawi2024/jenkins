@@ -18,4 +18,4 @@ VOLUME /var/jenkins_home
 
 EXPOSE 8080
 
-CMD ["jenkins-agent"]
+CMD ["java", "-jar", "/usr/share/jenkins/jenkins.war"]
