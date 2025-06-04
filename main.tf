@@ -21,19 +21,20 @@ resource "aws_route_table_association" "subnet_association" {
 }
 
 resource "aws_subnet" "new_subnet" {
-    vpc_id            = "vpc-0b7663962ba7082cb"
-    cidr_block        = "172.31.0.0/16"
-    availability_zone = "us-east-1a"
+    vpc_id                  = "vpc-0b7663962ba7082cb"
+    cidr_block              = "172.31.0.0/16"
+    availability_zone       = "us-east-1a"
     map_public_ip_on_launch = true
 
     tags = {
         Name = "NewSubnet"
     }
 }
+
 resource "aws_subnet" "new_subnet_2" {
-    vpc_id            = "vpc-0b7663962ba7082cb"
-    cidr_block        = "172.32.0.0/16" # Alterado para evitar conflito
-    availability_zone = "us-east-1b"
+    vpc_id                  = "vpc-0b7663962ba7082cb"
+    cidr_block              = "172.32.0.0/16" # Alterado para evitar conflito
+    availability_zone       = "us-east-1b"
     map_public_ip_on_launch = true
 
     tags = {
@@ -44,7 +45,7 @@ resource "aws_subnet" "new_subnet_2" {
 resource "aws_security_group" "jenkins_sg" {
     name        = "jenkins_sg"
     description = "Security group para Jenkins"
-    
+
     ingress {
         from_port   = 8080
         to_port     = 8080
@@ -58,7 +59,8 @@ resource "aws_security_group" "jenkins_sg" {
         protocol    = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
     }
-     ingress {
+
+    ingress {
         from_port   = 22
         to_port     = 22
         protocol    = "tcp"
@@ -85,39 +87,38 @@ resource "aws_instance" "jenkins_server" {
     }
 
     user_data = <<-EOF
-                #!/bin/bash
-                sudo yum update -y
-                sudo yum install -y docker
-                sudo systemctl enable docker
-                sudo systemctl start docker
+                                #!/bin/bash
+                                sudo yum update -y
+                                sudo yum install -y docker
+                                sudo systemctl enable docker
+                                sudo systemctl start docker
 
-                # Instalar Docker Compose
-                sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-                sudo chmod +x /usr/local/bin/docker-compose
+                                # Instalar Docker Compose
+                                sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+                                sudo chmod +x /usr/local/bin/docker-compose
 
-                  # Montar o disco persistente
-                sudo mkdir -p /mnt/data
-                sudo file_system=$(lsblk -o FSTYPE -n /dev/xvdf)
-                if [ -z "$file_system" ]; then
-                    sudo mkfs.ext4 /dev/xvdf
-                fi
-                sudo mount /dev/xvdf /mnt/data
-                sudo chmod 777 /mnt/data
+                                # Montar o disco persistente
+                                sudo mkdir -p /mnt/data
+                                sudo file_system=$(lsblk -o FSTYPE -n /dev/xvdf)
+                                if [ -z "$file_system" ]; then
+                                        sudo mkfs.ext4 /dev/xvdf
+                                fi
+                                sudo mount /dev/xvdf /mnt/data
+                                sudo chmod 777 /mnt/data
 
-                # Adicionar ao fstab para montagem automática
-                echo "/dev/xvdf /mnt/data ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
+                                # Adicionar ao fstab para montagem automática
+                                echo "/dev/xvdf /mnt/data ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
 
-                # Clonar repositório com Dockerfile e docker-compose.yml
-                sudo yum install -y git
-                git clone https://github.com/jangawi2024/jenkins.git /mnt/dados/jenkins
-                cd /mnt/dados/jenkins
+                                # Clonar repositório com Dockerfile e docker-compose.yml
+                                sudo yum install -y git
+                                git clone https://github.com/jangawi2024/jenkins.git /mnt/dados/jenkins
+                                cd /mnt/dados/jenkins
 
-              # Usar o disco para Jenkins
-                sudo docker-compose up -d
-                EOF
+                                # Usar o disco para Jenkins
+                                sudo docker-compose up -d
+                                EOF
 }
 
-# Adicionar o disco existente à instância
 resource "aws_volume_attachment" "jenkins_volume_attachment" {
     device_name = "/dev/xvdf" # Substitua pelo dispositivo correto
     volume_id   = "vol-0d192097b388986eb" # ID do disco existente
