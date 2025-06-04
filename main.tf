@@ -104,11 +104,11 @@ resource "aws_instance" "jenkins_server" {
         sudo chmod +x /usr/local/bin/docker-compose
 
         echo "Criando diretório para Jenkins e Nexus..."
-        sudo mkdir -p /var/jenkins_home
+        sudo mkdir -p /var/jenkins
         sudo mkdir -p /var/nexus-data
         sudo chmod 755 /var/jenkins /var/nexus-data
         sudo chown 1000:1000 /var/jenkins
-        sudo chown 1000:1000 /var/nexus-data
+        sudo chown 200:200 /var/nexus-data
 
         # Clonar repositório Jenkins
         sudo yum install -y git
