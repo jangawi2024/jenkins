@@ -85,8 +85,14 @@ resource "aws_instance" "jenkins_server" {
     tags = {
         Name = "JenkinsServer"
     }
+    root_block_device {
+        volume_size = 30       # Define o tamanho do disco raiz como 30GB
+        volume_type = "gp3"    # Tipo de volume (gp2 é o padrão para SSD)
+        delete_on_termination = true # Exclui o disco ao terminar a instância
+    }
 
-    user_data = <<-EOF
+
+     user_data = <<-EOF
         #!/bin/bash
         sudo yum update -y
         sudo yum install -y docker
@@ -97,41 +103,21 @@ resource "aws_instance" "jenkins_server" {
         sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
         sudo chmod +x /usr/local/bin/docker-compose
 
-        # Montar o disco persistente
-        sudo mkdir -p /mnt/data
-        sudo file_system=$(lsblk -o FSTYPE -n /dev/xvdf)
-        if [ -z "$file_system" ]; then
-            sudo mkfs.ext4 /dev/xvdf
-        fi
-        sudo mount /dev/xvdf /mnt/data
-        sudo chmod 777 /mnt/data/
+        # Criar diretório para Jenkins
+        sudo mkdir -p /var/jenkins
+        sudo chmod 777 /var/jenkins
+        sudo chown 1000:1000 /var/jenkins_home # Define o dono como o usuário Jenkins (UID 1000)
 
-        # Adicionar ao fstab para montagem automática
-        echo "/dev/xvdf /mnt/data ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
-
-        # # Verificar se a pasta jenkins já existe antes de clonar
-        # if [ ! -d "/mnt/data/jenkins" ]; then
-        #     sudo yum install -y git
-        #     git clone https://github.com/jangawi2024/jenkins.git /mnt/data/jenkins
-        # else
-        #     echo "A pasta /mnt/data/jenkins já existe. Não será sobrescrita."
-        # fi
-
-        cd /mnt/data/jenkins
-
-        sudo chmod 777 /mnt/data/jenkins
-        sudo chown 1000:1000 /mnt/data/jenkins # Define o dono como o usuário Jenkins (UID 1000)
+        # Clonar repositório Jenkins
+        sudo yum install -y git
+        git clone https://github.com/jangawi2024/jenkins.git /var/jenkins
 
         # Usar o disco para Jenkins
+        cd /var/jenkins
         sudo docker-compose up -d
     EOF
 }
 
-resource "aws_volume_attachment" "jenkins_volume_attachment" {
-    device_name = "/dev/xvdf" # Substitua pelo dispositivo correto
-    volume_id   = "vol-058aa6fa82c54ac95" # ID do disco existente
-    instance_id = aws_instance.jenkins_server.id
-}
 
 resource "aws_lb" "jenkins_alb" {
     name               = "jenkins-alb"
