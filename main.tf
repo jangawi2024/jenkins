@@ -103,6 +103,13 @@ resource "aws_instance" "jenkins_server" {
                             EOF
 }
 
+# Adicionar o disco existente à instância
+resource "aws_volume_attachment" "jenkins_volume_attachment" {
+    device_name = "/dev/xvdf" # Substitua pelo dispositivo correto
+    volume_id   = "vol-0d192097b388986eb" # ID do disco existente
+    instance_id = aws_instance.jenkins_server.id
+}
+
 resource "aws_lb" "jenkins_alb" {
     name               = "jenkins-alb"
     internal           = false
