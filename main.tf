@@ -95,12 +95,7 @@ resource "aws_instance" "jenkins_server" {
                 sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
                 sudo chmod +x /usr/local/bin/docker-compose
 
-                # Clonar repositório com Dockerfile e docker-compose.yml
-                sudo yum install -y git
-                git clone https://github.com/jangawi2024/jenkins.git /home/ec2-user/jenkins
-                cd /home/ec2-user/jenkins
-
-                # Montar o disco persistente
+                  # Montar o disco persistente
                 sudo mkdir -p /mnt/data
                 sudo file_system=$(lsblk -o FSTYPE -n /dev/xvdf)
                 if [ -z "$file_system" ]; then
@@ -112,8 +107,12 @@ resource "aws_instance" "jenkins_server" {
                 # Adicionar ao fstab para montagem automática
                 echo "/dev/xvdf /mnt/data ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
 
-                # Usar o disco para Jenkins
-                cd /home/ec2-user/jenkins
+                # Clonar repositório com Dockerfile e docker-compose.yml
+                sudo yum install -y git
+                git clone https://github.com/jangawi2024/jenkins.git /mnt/dados/jenkins
+                cd /mnt/dados/jenkins
+
+              # Usar o disco para Jenkins
                 sudo docker-compose up -d
                 EOF
 }
