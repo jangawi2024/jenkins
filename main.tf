@@ -104,7 +104,7 @@ resource "aws_instance" "jenkins_server" {
                                         sudo mkfs.ext4 /dev/xvdf
                                 fi
                                 sudo mount /dev/xvdf /mnt/data
-                                sudo chmod 777 /mnt/data
+                                sudo chmod 777 /mnt/data/jenkins
                                 sudo chown 1000:1000 /mnt/data/jenkins # Define o dono como o usuário Jenkins (UID 1000)
 
                                 # Adicionar ao fstab para montagem automática
