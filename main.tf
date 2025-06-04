@@ -109,13 +109,13 @@ resource "aws_instance" "jenkins_server" {
         # Adicionar ao fstab para montagem automática
         echo "/dev/xvdf /mnt/data ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
 
-        # Verificar se a pasta jenkins já existe antes de clonar
-        if [ ! -d "/mnt/data/jenkins" ]; then
-            sudo yum install -y git
-            git clone https://github.com/jangawi2024/jenkins.git /mnt/data/jenkins
-        else
-            echo "A pasta /mnt/data/jenkins já existe. Não será sobrescrita."
-        fi
+        # # Verificar se a pasta jenkins já existe antes de clonar
+        # if [ ! -d "/mnt/data/jenkins" ]; then
+        #     sudo yum install -y git
+        #     git clone https://github.com/jangawi2024/jenkins.git /mnt/data/jenkins
+        # else
+        #     echo "A pasta /mnt/data/jenkins já existe. Não será sobrescrita."
+        # fi
 
         cd /mnt/data/jenkins
 
