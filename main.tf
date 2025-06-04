@@ -87,40 +87,44 @@ resource "aws_instance" "jenkins_server" {
     }
 
     user_data = <<-EOF
-                                #!/bin/bash
-                                sudo yum update -y
-                                sudo yum install -y docker
-                                sudo systemctl enable docker
-                                sudo systemctl start docker
+        #!/bin/bash
+        sudo yum update -y
+        sudo yum install -y docker
+        sudo systemctl enable docker
+        sudo systemctl start docker
 
-                                # Instalar Docker Compose
-                                sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-                                sudo chmod +x /usr/local/bin/docker-compose
+        # Instalar Docker Compose
+        sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
 
-                                # Montar o disco persistente
-                                sudo mkdir -p /mnt/data
-                                sudo file_system=$(lsblk -o FSTYPE -n /dev/xvdf)
-                                if [ -z "$file_system" ]; then
-                                        sudo mkfs.ext4 /dev/xvdf
-                                fi
-                                sudo mount /dev/xvdf /mnt/data
-                                sudo chmod 777 /mnt/data/
-                                
+        # Montar o disco persistente
+        sudo mkdir -p /mnt/data
+        sudo file_system=$(lsblk -o FSTYPE -n /dev/xvdf)
+        if [ -z "$file_system" ]; then
+            sudo mkfs.ext4 /dev/xvdf
+        fi
+        sudo mount /dev/xvdf /mnt/data
+        sudo chmod 777 /mnt/data/
 
-                                # Adicionar ao fstab para montagem automática
-                                echo "/dev/xvdf /mnt/data ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
+        # Adicionar ao fstab para montagem automática
+        echo "/dev/xvdf /mnt/data ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
 
-                                # Clonar repositório com Dockerfile e docker-compose.yml
-                                sudo yum install -y git
-                                git clone https://github.com/jangawi2024/jenkins.git /mnt/data/jenkins
-                                cd /mnt/data/jenkins
+        # Verificar se a pasta jenkins já existe antes de clonar
+        if [ ! -d "/mnt/data/jenkins" ]; then
+            sudo yum install -y git
+            git clone https://github.com/jangawi2024/jenkins.git /mnt/data/jenkins
+        else
+            echo "A pasta /mnt/data/jenkins já existe. Não será sobrescrita."
+        fi
 
-                                sudo chmod 777 /mnt/data/jenkins
-                                sudo chown 1000:1000 /mnt/data/jenkins # Define o dono como o usuário Jenkins (UID 1000)
+        cd /mnt/data/jenkins
 
-                                # Usar o disco para Jenkins
-                                sudo docker-compose up -d
-                                EOF
+        sudo chmod 777 /mnt/data/jenkins
+        sudo chown 1000:1000 /mnt/data/jenkins # Define o dono como o usuário Jenkins (UID 1000)
+
+        # Usar o disco para Jenkins
+        sudo docker-compose up -d
+    EOF
 }
 
 resource "aws_volume_attachment" "jenkins_volume_attachment" {
@@ -138,6 +142,8 @@ resource "aws_lb" "jenkins_alb" {
 
     tags = {
         Name = "JenkinsALB"
+    }
+}
     }
 }
 
@@ -176,4 +182,9 @@ resource "aws_lb_target_group_attachment" "jenkins_attachment" {
     target_group_arn = aws_lb_target_group.jenkins_tg.arn
     target_id        = aws_instance.jenkins_server.id
     port             = 80
+}
+
+output "jenkins_server_ip" {
+    value = aws_instance.jenkins_server.public_ip
+    description = "IP público da instância Jenkins Server"
 }
