@@ -105,6 +105,7 @@ resource "aws_instance" "jenkins_server" {
                                 fi
                                 sudo mount /dev/xvdf /mnt/data
                                 sudo chmod 777 /mnt/data
+                                sudo chown 1000:1000 /mnt/data/jenkins # Define o dono como o usuário Jenkins (UID 1000)
 
                                 # Adicionar ao fstab para montagem automática
                                 echo "/dev/xvdf /mnt/data ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
@@ -121,7 +122,7 @@ resource "aws_instance" "jenkins_server" {
 
 resource "aws_volume_attachment" "jenkins_volume_attachment" {
     device_name = "/dev/xvdf" # Substitua pelo dispositivo correto
-    volume_id   = "vol-0d192097b388986eb" # ID do disco existente
+    volume_id   = "vol-01eb61091a766da12" # ID do disco existente
     instance_id = aws_instance.jenkins_server.id
 }
 
