@@ -144,8 +144,7 @@ resource "aws_lb" "jenkins_alb" {
         Name = "JenkinsALB"
     }
 }
-    }
-}
+ 
 
 resource "aws_lb_target_group" "jenkins_tg" {
     name        = "jenkins-tg"
@@ -182,9 +181,4 @@ resource "aws_lb_target_group_attachment" "jenkins_attachment" {
     target_group_arn = aws_lb_target_group.jenkins_tg.arn
     target_id        = aws_instance.jenkins_server.id
     port             = 80
-}
-
-output "jenkins_server_ip" {
-    value = aws_instance.jenkins_server.public_ip
-    description = "IP público da instância Jenkins Server"
 }
