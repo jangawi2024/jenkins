@@ -159,7 +159,7 @@ resource "aws_lb_target_group" "jenkins_tg" {
 
 resource "aws_lb_listener" "jenkins_listener" {
     load_balancer_arn = aws_lb.jenkins_alb.arn
-    port              = 80
+    port              = 8080
     protocol          = "HTTP"
 
     default_action {

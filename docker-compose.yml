@@ -7,7 +7,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - /mnt/data/jenkins_home:/var/jenkins_home #Mapeia o disco persistente para o diretório do Jenkins
+      - /mnt/data:/var/jenkins_home #Mapeia o disco persistente para o diretório do Jenkins
     environment:
       - JAVA_OPTS=-Xmx1024m
       - JENKINS_OPTS=--prefix=/jenkins
