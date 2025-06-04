@@ -104,8 +104,8 @@ resource "aws_instance" "jenkins_server" {
                                         sudo mkfs.ext4 /dev/xvdf
                                 fi
                                 sudo mount /dev/xvdf /mnt/data
-                                sudo chmod 777 /mnt/data/jenkins
-                                sudo chown 1000:1000 /mnt/data/jenkins # Define o dono como o usuário Jenkins (UID 1000)
+                                sudo chmod 777 /mnt/data/
+                                
 
                                 # Adicionar ao fstab para montagem automática
                                 echo "/dev/xvdf /mnt/data ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
@@ -114,6 +114,9 @@ resource "aws_instance" "jenkins_server" {
                                 sudo yum install -y git
                                 git clone https://github.com/jangawi2024/jenkins.git /mnt/data/jenkins
                                 cd /mnt/data/jenkins
+
+                                sudo chmod 777 /mnt/data/jenkins
+                                sudo chown 1000:1000 /mnt/data/jenkins # Define o dono como o usuário Jenkins (UID 1000)
 
                                 # Usar o disco para Jenkins
                                 sudo docker-compose up -d
