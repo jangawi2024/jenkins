@@ -25,7 +25,8 @@ services:
     volumes:
       - /var/nexus-data:/nexus-data # Diretório persistente para Nexus
     environment:
-      - NEXUS_CONTEXT=/nexus
+      - application-host=0.0.0.0
+    hostname: nexus.local
     networks:
       - jenkins_net
 
